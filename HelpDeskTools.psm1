@@ -271,4 +271,4 @@ function Start-Monitor {
 
 
 
-Export-ModuleMember -Function Get-DCSDComputerInfo, Get-MilestoneEventLog, Start-Monitor
+Export-ModuleMember -Function Get-DCSDComputerInfo, Start-Monitor
