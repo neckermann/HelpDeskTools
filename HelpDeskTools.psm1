@@ -78,27 +78,6 @@ function Get-DCSDComputerInfo {
 
 }
 
-function Get-MileStoneEventLog{
-    [CmdletBinding()]
-    Param(
-        [Parameter(Mandatory=$true,
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true)]
-        [string[]]$ComputerName
- 
-    )
-    BEGIN{}
-    PROCESS{
-        foreach ($Computer in $ComputerName){
-            if (Test-CompConnection $Computer){
- Get-EventLog -ComputerName $Computer -LogName Application -Source "Milestone*" -Newest 15 |Select-Object TimeGenerated,Source,Message,MachineName
-            }else{
-            Write-Output "The Computer you were trying to reach was not on"
-            }
-        }
-    }
-    END{}
-}
 
 
 
@@ -124,13 +103,6 @@ function Get-DCSDAppInfo {
     }
     END{}
 }
-
-
-Get-DCSDAppInfo -ComputerName localhost 
-
-
-
-
 
 
 
