@@ -22,7 +22,6 @@ function  {
 }
 #>
 
-
 function Test-CompConnection($computer){
     $works=$true
     if (Test-Connection $computer -Count 1 -Quiet){
@@ -30,15 +29,20 @@ function Test-CompConnection($computer){
             Get-WmiObject -Class win32_bios -ComputerName $computer -ErrorAction Stop | Out-Null
         }catch{
             $works=$false
-            Write-Host 'Was not able to connect to WMI Service Computer/IP you entered. Check firewall settings'
+            Write-Host "Was not able to connect to WMI Service on $computer. Check firewall settings"
         }
 
     }else{
-        Write-Host 'Was not able to connect to the Computer/IP you entered. Check the computer is on.'
+        Write-Host "Was not able to connect to $computer. Check the computer is on."
         $works=$false
     }
     return $works
 }
+
+
+
+
+
 
 
 function Get-DCSDComputerInfo {
@@ -95,6 +99,40 @@ function Get-MileStoneEventLog{
     }
     END{}
 }
+
+
+
+function Get-DCSDAppInfo {
+    [CmdletBinding()]
+    Param(
+        [Parameter(Mandatory=$true,
+                   ValueFromPipeline=$true,
+                   ValueFromPipelineByPropertyName=$true)]
+        [string[]]$ComputerName,
+        [string]$ApplicationName = "*"
+
+        
+    )
+    BEGIN{}
+    PROCESS{
+        foreach ($Computer in $ComputerName){
+                if (Test-CompConnection $Computer){
+                Get-WmiObject -Class win32_product -ComputerName $Computer |Where-Object Name -Like $ApplicationName
+                }
+        }
+
+    }
+    END{}
+}
+
+
+Get-DCSDAppInfo -ComputerName localhost 
+
+
+
+
+
+
 
 function Start-Monitor {
       
@@ -271,4 +309,4 @@ function Start-Monitor {
 
 
 
-Export-ModuleMember -Function Get-DCSDComputerInfo, Start-Monitor
+Export-ModuleMember -Function Get-DCSDComputerInfo, Start-Monitor, Test-CompConnection, Get-DCSDAppInfo
