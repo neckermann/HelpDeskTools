@@ -96,7 +96,7 @@ function Get-DCSDComputerInfo {
 Get Computer info on local or remote computer(s)
 
 .DESCRIPTION
-Get Computer Manufacturer, Model, Serial, Asset Tag, Memory, OS Verions, Imaged Date and User Logged on Info.
+Get Computer Manufacturer, Model, Serial, Asset Tag, Memory, OS Versions, Imaged Date and User Logged on Info.
 
 .PARAMETER ComputerName
 Input computer name or names to get information from
@@ -229,7 +229,7 @@ Specify the SMTP Server for sending notification emails
 May want to change the default to suite your domain.
 
 .NOTES
-Start-Monitor from: https://gallery.technet.microsoft.com/scriptcenter/2d537e5c-b5d4-42ca-a23e-2cbce636f58d
+I modified the orianal found on think link in help.
 
 .LINK
 https://gallery.technet.microsoft.com/scriptcenter/2d537e5c-b5d4-42ca-a23e-2cbce636f58d
