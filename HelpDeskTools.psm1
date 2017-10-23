@@ -40,12 +40,69 @@ function Test-CompConnection($computer){
 }
 
 
+function Get-DCSDHotFixInfo {
+<#
+.SYNOPSIS
+Get Computer HotFix info on local or remote computer(s)
 
+.DESCRIPTION
+Get Computer HotFix information.
+
+.PARAMETER ComputerName
+Input computer name or names to get information from
+
+.EXAMPLE
+Get-DCSDHotFixInfo -ComputerName TESTCOMP01 -HotFixID *
+Gets a list of all HotFixes installed on TESTCOMPUTER01
+
+.EXAMPLE
+Get-DCSDHotFixInfo -ComputerName TESTCOMPUTER01 -HotFixID KB401990
+Checks TESTCOMP01 to see if HotFix KB401990 is installed
+
+.EXAMPLE
+Get-DCSDHotFixInfo -ComputerName ((Get-ADComputer -Filter *).Name) -HotFixID *
+Gets a list of all HotFixes installed on ev
+
+#>
+    [CmdletBinding()]
+    Param(
+        [Parameter(Mandatory=$true,
+                   ValueFromPipeline=$true,
+                   ValueFromPipelineByPropertyName=$true)]
+        [string[]]$ComputerName,
+        [Parameter(ValueFromPipelineByPropertyName=$true)]
+        [string[]] $HotFixID = "*"
+    )
+    BEGIN{}
+    PROCESS{
+        foreach ($Computer in $ComputerName){
+            if (Test-CompConnection $Computer){
+                Get-WmiObject -ComputerName $Computer Win32_QuickFixEngineering |
+                Where-Object HotFixiD -like $HotFixID|
+                Select-Object PSComputerName, HotFixID,InstalledOn
+            }
+
+        }
+    }
+    END{}
+}
 
 
 
 
 function Get-DCSDComputerInfo {
+<#
+.SYNOPSIS
+Get Computer info on local or remote computer(s)
+
+.DESCRIPTION
+Get Computer Manufacturer, Model, Serial, Asset Tag, Memory, OS Verions, Imaged Date and User Logged on Info.
+
+.PARAMETER ComputerName
+Input computer name or names to get information from
+
+
+#>
     [CmdletBinding()]
     Param(
         [Parameter(Mandatory=$true,
@@ -59,18 +116,21 @@ function Get-DCSDComputerInfo {
             if (Test-CompConnection $Computer){
                $cs = Get-WmiObject -Class win32_ComputerSystem -ComputerName $Computer
                $sysenc = Get-WmiObject -Class win32_SystemEnclosure -ComputerName $Computer
-               $memory = Get-WmiObject -Class win32_PhysicalMemory -ComputerName $Computer
-            $props=[ordered]@{
-                    'Computer Manufacture'=$cs.Manufacturer;
-                    'Computer Model'=$cs.Model;
-                    'Computer Name'=$cs.Name;
-                    'Computer Serial'=$sysenc.SerialNumber;
-                    'Computer Asset'=$sysenc.SMBIOSAssetTag;
-                    'Computer Memory' =$memory.Capacity
-                    'Logged In'= $cs.UserName
-                   }
-               $obj=New-Object -TypeName PSObject -Property $props 
-               Write-Output $obj
+               $memory = [math]::Round((Get-WmiObject -Class Win32_ComputerSystem  -computer $Computer).TotalPhysicalMemory/1GB)
+               $OS = Get-WmiObject -ComputerName $Computer -Class Win32_OperatingSystem
+                    $props=[ordered]@{
+                            'Computer Manufacturer' = $cs.Manufacturer;
+                            'Computer Model' = $cs.Model;
+                            'Computer Name' = $cs.Name;
+                            'Computer Serial' = $sysenc.SerialNumber;
+                            'Computer Asset' = $sysenc.SMBIOSAssetTag;
+                            'Computer Memory(GB)' = $memory;
+                            'Logged In'= $cs.UserName;
+                            'OS Version' = $OS.Caption;
+                            'Imaged on' = $OS.ConvertToDateTime($OS.InstallDate) -f "MM/dd/yyyy" 
+                     }
+                       $obj=New-Object -TypeName PSObject -Property $props
+                       Write-Output $obj
             }
         }
     }
@@ -82,6 +142,20 @@ function Get-DCSDComputerInfo {
 
 
 function Get-DCSDAppInfo {
+<#
+.SYNOPSIS
+Get Application info on local or remote computer(s)
+
+.DESCRIPTION
+Get Applicaiton information via WMI from a local or remote computer(s).
+
+.PARAMETER ComputerName
+Input computer name or names to get AppInfo from
+
+.PARAMETER ApplicationName
+Enter name of application you are looking for *Adobe*
+
+#>
     [CmdletBinding()]
     Param(
         [Parameter(Mandatory=$true,
@@ -96,7 +170,9 @@ function Get-DCSDAppInfo {
     PROCESS{
         foreach ($Computer in $ComputerName){
                 if (Test-CompConnection $Computer){
-                Get-WmiObject -Class win32_product -ComputerName $Computer |Where-Object Name -Like $ApplicationName
+                    Get-WmiObject -Class win32_product -ComputerName $Computer |
+                    Where-Object Name -Like $ApplicationName |
+                    Select-Object PSComputerName,Name,Version,InstallDate
                 }
         }
 
@@ -107,7 +183,59 @@ function Get-DCSDAppInfo {
 
 
 function Start-Monitor {
-      
+<#
+
+.SYNOPSIS
+Monitor computer(s) connected to a network.
+
+.DESCRIPTION
+Monitor computer(s) connected to a network with switches to email with the computer(s) go offline and when they come back online.
+
+.PARAMETER ComputerName
+Input computer name or names to monitor
+
+.PARAMETER NotifyOnServerDown
+Switch to Enable Email Notifications on First Down
+
+.PARAMETER NotifyOnServerBackOnline
+Switch to Enable Email Notifications on Server Online
+
+.PARAMETER NotifyOnMaxOutageCount
+Switch to Enable Email Notifications on MaxOutageCount
+
+.PARAMETER NotifyAll
+Switch to Enable all notifications
+
+.PARAMETER EmailTimeOut
+Specify the time you want email notifications resent for hosts that are down.
+Default is 30 seconds
+
+.PARAMETER SleepTimeOut
+Specify the time you want to cycle through your host lists
+Default is 60 seconds
+
+.PARAMETER MaxOutageCount
+Specify the maximum hosts that can be down before the script is aborted
+Default is 100
+
+.PARAMETER ToNotification
+Specify the email address of who gets notified
+May want to change the default to suite your domain.
+.PARAMETER FromNotification
+Specify email address where the notifications come from 
+May want to change the default to suite your domain.
+.PARAMETER SMTPServer
+Specify the SMTP Server for sending notification emails
+May want to change the default to suite your domain.
+
+.NOTES
+Start-Monitor from: https://gallery.technet.microsoft.com/scriptcenter/2d537e5c-b5d4-42ca-a23e-2cbce636f58d
+
+.LINK
+https://gallery.technet.microsoft.com/scriptcenter/2d537e5c-b5d4-42ca-a23e-2cbce636f58d
+
+#> 
+     
       #Requires -Version 2.0            
       [CmdletBinding()]            
       Param             
@@ -118,30 +246,30 @@ function Start-Monitor {
             [String[]]$ComputerName = $env:COMPUTERNAME,        
             
             # Switch to Enable Email Notifications on First Down
-            [Switch]$notifyonServerDown,
+            [Switch]$NotifyOnServerDown,
             
             # Switch to Enable Email Notifications on Server Online
-            [Switch]$notifyonServerBackOnline,
+            [Switch]$NotifyOnServerBackOnline,
             
             # Switch to Enable Email Notifications on MaxOutageCount
-            [Switch]$notifyonMaxOutageCount,
+            [Switch]$NotifyOnMaxOutageCount,
             
             # Switch to Enable all notifications
-            [Switch]$notifyAll,
+            [Switch]$NotifyAll,
 
             # specify the time you want email notifications resent for hosts that are down
             $EmailTimeOut = 30,
-            # specify the time you want to cycle through your host lists.
+            # specify the time you want to cycle through your host lists
             $SleepTimeOut = 60,
             # specify the maximum hosts that can be down before the script is aborted
             $MaxOutageCount = 100,
             
             # specify who gets notified 
-            $tonotification = "$env:username@davenport.k12.ia.us", 
+            $ToNotification = "$env:username@davenport.k12.ia.us", 
             # specify where the notifications come from 
-            $fromnotification = "$env:username@davenport.k12.ia.us", 
+            $FromNotification = "$env:username@davenport.k12.ia.us", 
             # specify the SMTP server 
-            $smtpserver = "aspmx.l.google.com",
+            $SMTPServer = "aspmx.l.google.com",
             
             # reset the lists of hosts prior to looping
             $OutageHosts = @()            
@@ -281,4 +409,4 @@ function Start-Monitor {
 
 
 
-Export-ModuleMember -Function Get-DCSDComputerInfo, Start-Monitor, Test-CompConnection, Get-DCSDAppInfo
+Export-ModuleMember -Function Get-DCSDComputerInfo, Start-Monitor, Test-CompConnection, Get-DCSDAppInfo,Get-DCSDHotFixInfo
