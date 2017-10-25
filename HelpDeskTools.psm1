@@ -465,4 +465,4 @@ https://gallery.technet.microsoft.com/scriptcenter/2d537e5c-b5d4-42ca-a23e-2cbce
 
 
 
-Export-ModuleMember -Function Get-DCSDComputerInfo, Start-Monitor, Test-CompConnection, Get-DCSDAppInfo,Get-DCSDHotFixInfo
+Export-ModuleMember -Function Get-DCSDComputerInfo, Start-Monitor, Test-CompConnection, Get-DCSDAppInfo,Get-DCSDHotFixInfo,Get-DCSDComputerHDInfo
