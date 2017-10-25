@@ -23,6 +23,12 @@ function  {
 #>
 
 function Test-CompConnection($computer){
+<#
+.SYNOPSIS
+Test computer with a ping and WMI call to make sure it is accessible to run cmdlets against.
+.DESCRIPTION
+Test computer with a ping and WMI call to make sure it is accessible to run cmdlets against.
+#>
     $works=$true
     if (Test-Connection $computer -Count 1 -Quiet){
         try{
@@ -44,26 +50,21 @@ function Get-HDToolsHotFixInfo {
 <#
 .SYNOPSIS
 Get Computer HotFix info on local or remote computer(s)
-
 .DESCRIPTION
 Get Computer HotFix information.
-
 .PARAMETER ComputerName
 Input computer name or names to get information from
-
 .EXAMPLE
 Get-HDToolsHotFixInfo -ComputerName TESTCOMP01 -HotFixID *
 Gets a list of all HotFixes installed on TESTCOMPUTER01
-
 .EXAMPLE
 Get-HDToolsHotFixInfo -ComputerName TESTCOMPUTER01 -HotFixID KB401990
 Checks TESTCOMP01 to see if HotFix KB401990 is installed
-
 .EXAMPLE
 Get-HDToolsHotFixInfo -ComputerName ((Get-ADComputer -Filter *).Name) -HotFixID *
-Gets a list of all HotFixes installed on ev
-
+Gets a list of all HotFixes installed on every computer in the current AD Domain
 #>
+
     [CmdletBinding()]
     Param(
         [Parameter(Mandatory=$true,
@@ -94,14 +95,10 @@ function Get-HDToolsComputerInfo {
 <#
 .SYNOPSIS
 Get Computer info on local or remote computer(s)
-
 .DESCRIPTION
 Get Computer Manufacturer, Model, Serial, Asset Tag, Memory, OS Versions, Imaged Date and User Logged on Info.
-
 .PARAMETER ComputerName
 Input computer name or names to get information from
-
-
 #>
     [CmdletBinding()]
     Param(
@@ -138,6 +135,52 @@ Input computer name or names to get information from
 
 }
 
+function Get-HDToolsComputerHDInfo {
+<#
+.SYNOPSIS
+Gets hard drive information from computer(s)
+.DESCRIPTION
+Gets hard drive information from computers including Drive Letter, Total Size and Free Space rounded to the closest GB.
+.PARAMETER ComputerName
+Input computer name or names to get information from
+.PARAMETER DriveLetter
+Defaults to C: drive info but you can specify another drive with this parameter.
+.EXAMPLE
+Get-HDToolsComputerHDINfo -ComputerName TESTCOMP01
+Returns total size, free space and volume name from the C: drive on TESTCOMP01 computer
+Get-HDToolsComputerHDINfo -ComputerName TESTCOMP01 -DriveLetter E:
+Returns total size, free space and volume name from the E: drive on TESTCOMP01 computer
+#>
+    [CmdletBinding()]
+    Param(
+        [Parameter(Mandatory=$true,
+                   ValueFromPipeline=$true,
+                   ValueFromPipelineByPropertyName=$true)]
+        [string[]]$ComputerName,
+        [Parameter(ValueFromPipelineByPropertyName=$true)]
+        [string[]] $DriveLetter = "C:"
+    )
+    BEGIN{}
+    PROCESS{
+        foreach ($Computer in $ComputerName){
+            if (Test-CompConnection $Computer){
+              $Drive = Get-WmiObject -ComputerName $ComputerName Win32_LogicalDisk |Where-Object DeviceID -EQ "$DriveLetter"
+              $TotalSize = [math]::Round(($Drive).Size/1GB)
+              $FreeSpace = [math]::Round(($Drive).FreeSpace/1GB)
+
+                $props=[ordered]@{
+                    'Drive Letter' = $Drive.DeviceID;
+                    'Drive Name' = $Drive.VolumeName;
+                    'Total Size(GB)' = $TotalSize;
+                    'Free Space(GB)' = $FreeSpace;
+                }
+               $obj=New-Object -TypeName PSObject -Property $props 
+               Write-Output $obj
+            }
+        }
+    }
+    END{}
+}
 
 
 
@@ -145,17 +188,14 @@ function Get-HDToolsAppInfo {
 <#
 .SYNOPSIS
 Get Application info on local or remote computer(s)
-
 .DESCRIPTION
-Get Applicaiton information via WMI from a local or remote computer(s).
-
+Get Application information via WMI from a local or remote computer(s).
 .PARAMETER ComputerName
 Input computer name or names to get AppInfo from
-
 .PARAMETER ApplicationName
 Enter name of application you are looking for *Adobe*
-
 #>
+
     [CmdletBinding()]
     Param(
         [Parameter(Mandatory=$true,
@@ -184,40 +224,29 @@ Enter name of application you are looking for *Adobe*
 
 function Start-Monitor {
 <#
-
 .SYNOPSIS
 Monitor computer(s) connected to a network.
-
 .DESCRIPTION
 Monitor computer(s) connected to a network with switches to email with the computer(s) go offline and when they come back online.
-
 .PARAMETER ComputerName
 Input computer name or names to monitor
-
 .PARAMETER NotifyOnServerDown
 Switch to Enable Email Notifications on First Down
-
 .PARAMETER NotifyOnServerBackOnline
 Switch to Enable Email Notifications on Server Online
-
 .PARAMETER NotifyOnMaxOutageCount
 Switch to Enable Email Notifications on MaxOutageCount
-
 .PARAMETER NotifyAll
 Switch to Enable all notifications
-
 .PARAMETER EmailTimeOut
 Specify the time you want email notifications resent for hosts that are down.
 Default is 30 seconds
-
 .PARAMETER SleepTimeOut
 Specify the time you want to cycle through your host lists
 Default is 60 seconds
-
 .PARAMETER MaxOutageCount
 Specify the maximum hosts that can be down before the script is aborted
 Default is 100
-
 .PARAMETER ToNotification
 Specify the email address of who gets notified
 May want to change the default to suite your domain.
@@ -227,13 +256,10 @@ May want to change the default to suite your domain.
 .PARAMETER SMTPServer
 Specify the SMTP Server for sending notification emails
 May want to change the default to suite your domain.
-
 .NOTES
-I modified the orianal found on think link in help.
-
+I modified the original found on think link in help.
 .LINK
 https://gallery.technet.microsoft.com/scriptcenter/2d537e5c-b5d4-42ca-a23e-2cbce636f58d
-
 #> 
      
       #Requires -Version 2.0            
@@ -409,4 +435,4 @@ https://gallery.technet.microsoft.com/scriptcenter/2d537e5c-b5d4-42ca-a23e-2cbce
 
 
 
-Export-ModuleMember -Function Get-HDToolsComputerInfo, Start-Monitor, Test-CompConnection, Get-HDToolsAppInfo,Get-HDToolsHotFixInfo
+Export-ModuleMember -Function Get-HDToolsComputerInfo, Start-Monitor, Test-CompConnection, Get-HDToolsAppInfo,Get-HDToolsHotFixInfo,Get-HDToolsComputerHDInfo
