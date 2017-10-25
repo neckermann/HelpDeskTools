@@ -23,13 +23,6 @@ function  {
 #>
 
 function Test-CompConnection($computer){
-<#
-.SYNOPSIS
-Test computer with a ping and WMI call to make sure it is accessible to run cmdlets against.
-
-.DESCRIPTION
-Test computer with a ping and WMI call to make sure it is accessible to run cmdlets against.
-#>
     $works=$true
     if (Test-Connection $computer -Count 1 -Quiet){
         try{
@@ -47,7 +40,7 @@ Test computer with a ping and WMI call to make sure it is accessible to run cmdl
 }
 
 
-function Get-DCSDHotFixInfo {
+function Get-HDToolsHotFixInfo {
 <#
 .SYNOPSIS
 Get Computer HotFix info on local or remote computer(s)
@@ -59,19 +52,18 @@ Get Computer HotFix information.
 Input computer name or names to get information from
 
 .EXAMPLE
-Get-DCSDHotFixInfo -ComputerName TESTCOMP01 -HotFixID *
+Get-HDToolsHotFixInfo -ComputerName TESTCOMP01 -HotFixID *
 Gets a list of all HotFixes installed on TESTCOMPUTER01
 
 .EXAMPLE
-Get-DCSDHotFixInfo -ComputerName TESTCOMPUTER01 -HotFixID KB401990
+Get-HDToolsHotFixInfo -ComputerName TESTCOMPUTER01 -HotFixID KB401990
 Checks TESTCOMP01 to see if HotFix KB401990 is installed
 
 .EXAMPLE
-Get-DCSDHotFixInfo -ComputerName ((Get-ADComputer -Filter *).Name) -HotFixID *
-Gets a list of all HotFixes installed on every computer in the current AD Domain
+Get-HDToolsHotFixInfo -ComputerName ((Get-ADComputer -Filter *).Name) -HotFixID *
+Gets a list of all HotFixes installed on ev
 
 #>
-
     [CmdletBinding()]
     Param(
         [Parameter(Mandatory=$true,
@@ -98,7 +90,7 @@ Gets a list of all HotFixes installed on every computer in the current AD Domain
 
 
 
-function Get-DCSDComputerInfo {
+function Get-HDToolsComputerInfo {
 <#
 .SYNOPSIS
 Get Computer info on local or remote computer(s)
@@ -108,6 +100,8 @@ Get Computer Manufacturer, Model, Serial, Asset Tag, Memory, OS Versions, Imaged
 
 .PARAMETER ComputerName
 Input computer name or names to get information from
+
+
 #>
     [CmdletBinding()]
     Param(
@@ -144,65 +138,16 @@ Input computer name or names to get information from
 
 }
 
-function Get-DCSDComputerHDInfo {
-<#
-.SYNOPSIS
-Gets hard drive information from computer(s)
-
-.DESCRIPTION
-Gets hard drive information from computers including Drive Letter, Total Size and Free Space rounded to the closest GB.
-
-.PARAMETER ComputerName
-Input computer name or names to get information from
-.PARAMETER DriveLetter
-Defaults to C: drive info but you can specify another drive with this parameter.
-.EXAMPLE
-Get-DCSDComputerHDINfo -ComputerName TESTCOMP01
-Returns total size, free space and volume name from the C: drive on TESTCOMP01 computer
-Get-DCSDComputerHDINfo -ComputerName TESTCOMP01 -DriveLetter E:
-Returns total size, free space and volume name from the E: drive on TESTCOMP01 computer
-
-#>
-    [CmdletBinding()]
-    Param(
-        [Parameter(Mandatory=$true,
-                   ValueFromPipeline=$true,
-                   ValueFromPipelineByPropertyName=$true)]
-        [string[]]$ComputerName,
-        [Parameter(ValueFromPipelineByPropertyName=$true)]
-        [string[]] $DriveLetter = "C:"
-    )
-    BEGIN{}
-    PROCESS{
-        foreach ($Computer in $ComputerName){
-            if (Test-CompConnection $Computer){
-              $Drive = Get-WmiObject -ComputerName $ComputerName Win32_LogicalDisk |Where-Object DeviceID -EQ "$DriveLetter"
-              $TotalSize = [math]::Round(($Drive).Size/1GB)
-              $FreeSpace = [math]::Round(($Drive).FreeSpace/1GB)
-
-                $props=[ordered]@{
-                    'Drive Letter' = $Drive.DeviceID;
-                    'Drive Name' = $Drive.VolumeName;
-                    'Total Size(GB)' = $TotalSize;
-                    'Free Space(GB)' = $FreeSpace;
-                }
-               $obj=New-Object -TypeName PSObject -Property $props 
-               Write-Output $obj
-            }
-        }
-    }
-    END{}
-}
 
 
 
-function Get-DCSDAppInfo {
+function Get-HDToolsAppInfo {
 <#
 .SYNOPSIS
 Get Application info on local or remote computer(s)
 
 .DESCRIPTION
-Get Application information via WMI from a local or remote computer(s).
+Get Applicaiton information via WMI from a local or remote computer(s).
 
 .PARAMETER ComputerName
 Input computer name or names to get AppInfo from
@@ -211,7 +156,6 @@ Input computer name or names to get AppInfo from
 Enter name of application you are looking for *Adobe*
 
 #>
-
     [CmdletBinding()]
     Param(
         [Parameter(Mandatory=$true,
@@ -285,7 +229,7 @@ Specify the SMTP Server for sending notification emails
 May want to change the default to suite your domain.
 
 .NOTES
-I modified the original found on think link in help.
+I modified the orianal found on think link in help.
 
 .LINK
 https://gallery.technet.microsoft.com/scriptcenter/2d537e5c-b5d4-42ca-a23e-2cbce636f58d
@@ -465,4 +409,4 @@ https://gallery.technet.microsoft.com/scriptcenter/2d537e5c-b5d4-42ca-a23e-2cbce
 
 
 
-Export-ModuleMember -Function Get-DCSDComputerInfo, Start-Monitor, Test-CompConnection, Get-DCSDAppInfo,Get-DCSDHotFixInfo,Get-DCSDComputerHDInfo
+Export-ModuleMember -Function Get-HDToolsComputerInfo, Start-Monitor, Test-CompConnection, Get-HDToolsAppInfo,Get-HDToolsHotFixInfo
