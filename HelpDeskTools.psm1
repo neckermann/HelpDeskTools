@@ -68,9 +68,10 @@ Checks TESTCOMP01 to see if HotFix KB401990 is installed
 
 .EXAMPLE
 Get-DCSDHotFixInfo -ComputerName ((Get-ADComputer -Filter *).Name) -HotFixID *
-Gets a list of all HotFixes installed on ev
+Gets a list of all HotFixes installed on every computer in the current AD Domain
 
 #>
+
     [CmdletBinding()]
     Param(
         [Parameter(Mandatory=$true,
@@ -107,8 +108,6 @@ Get Computer Manufacturer, Model, Serial, Asset Tag, Memory, OS Versions, Imaged
 
 .PARAMETER ComputerName
 Input computer name or names to get information from
-
-
 #>
     [CmdletBinding()]
     Param(
@@ -203,7 +202,7 @@ function Get-DCSDAppInfo {
 Get Application info on local or remote computer(s)
 
 .DESCRIPTION
-Get Applicaiton information via WMI from a local or remote computer(s).
+Get Application information via WMI from a local or remote computer(s).
 
 .PARAMETER ComputerName
 Input computer name or names to get AppInfo from
@@ -212,6 +211,7 @@ Input computer name or names to get AppInfo from
 Enter name of application you are looking for *Adobe*
 
 #>
+
     [CmdletBinding()]
     Param(
         [Parameter(Mandatory=$true,
@@ -285,7 +285,7 @@ Specify the SMTP Server for sending notification emails
 May want to change the default to suite your domain.
 
 .NOTES
-I modified the orianal found on think link in help.
+I modified the original found on think link in help.
 
 .LINK
 https://gallery.technet.microsoft.com/scriptcenter/2d537e5c-b5d4-42ca-a23e-2cbce636f58d
