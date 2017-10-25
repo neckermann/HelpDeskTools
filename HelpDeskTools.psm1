@@ -158,7 +158,7 @@ Returns total size, free space and volume name from the E: drive on TESTCOMP01 c
                    ValueFromPipelineByPropertyName=$true)]
         [string[]]$ComputerName,
         [Parameter(ValueFromPipelineByPropertyName=$true)]
-        [string[]] $DriveLetter = "C:"
+        [string] $DriveLetter = "C:"
     )
     BEGIN{}
     PROCESS{
