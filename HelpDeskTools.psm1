@@ -23,6 +23,13 @@ function  {
 #>
 
 function Test-CompConnection($computer){
+<#
+.SYNOPSIS
+Test computer with a ping and WMI call to make sure it is accessible to run cmdlets against.
+
+.DESCRIPTION
+Test computer with a ping and WMI call to make sure it is accessible to run cmdlets against.
+#>
     $works=$true
     if (Test-Connection $computer -Count 1 -Quiet){
         try{
@@ -138,6 +145,55 @@ Input computer name or names to get information from
 
 }
 
+function Get-DCSDComputerHDInfo {
+<#
+.SYNOPSIS
+Gets hard drive information from computer(s)
+
+.DESCRIPTION
+Gets hard drive information from computers including Drive Letter, Total Size and Free Space rounded to the closest GB.
+
+.PARAMETER ComputerName
+Input computer name or names to get information from
+.PARAMETER DriveLetter
+Defaults to C: drive info but you can specify another drive with this parameter.
+.EXAMPLE
+Get-DCSDComputerHDINfo -ComputerName TESTCOMP01
+Returns total size, free space and volume name from the C: drive on TESTCOMP01 computer
+Get-DCSDComputerHDINfo -ComputerName TESTCOMP01 -DriveLetter E:
+Returns total size, free space and volume name from the E: drive on TESTCOMP01 computer
+
+#>
+    [CmdletBinding()]
+    Param(
+        [Parameter(Mandatory=$true,
+                   ValueFromPipeline=$true,
+                   ValueFromPipelineByPropertyName=$true)]
+        [string[]]$ComputerName,
+        [Parameter(ValueFromPipelineByPropertyName=$true)]
+        [string[]] $DriveLetter = "C:"
+    )
+    BEGIN{}
+    PROCESS{
+        foreach ($Computer in $ComputerName){
+            if (Test-CompConnection $Computer){
+              $Drive = Get-WmiObject -ComputerName $ComputerName Win32_LogicalDisk |Where-Object DeviceID -EQ "$DriveLetter"
+              $TotalSize = [math]::Round(($Drive).Size/1GB)
+              $FreeSpace = [math]::Round(($Drive).FreeSpace/1GB)
+
+                $props=[ordered]@{
+                    'Drive Letter' = $Drive.DeviceID;
+                    'Drive Name' = $Drive.VolumeName;
+                    'Total Size(GB)' = $TotalSize;
+                    'Free Space(GB)' = $FreeSpace;
+                }
+               $obj=New-Object -TypeName PSObject -Property $props 
+               Write-Output $obj
+            }
+        }
+    }
+    END{}
+}
 
 
 
