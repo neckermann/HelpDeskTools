@@ -169,6 +169,7 @@ Returns total size, free space and volume name from the E: drive on TESTCOMP01 c
               $FreeSpace = [math]::Round(($Drive).FreeSpace/1GB)
 
                 $props=[ordered]@{
+                    'Computer Name' = $Computer
                     'Drive Letter' = $Drive.DeviceID;
                     'Drive Name' = $Drive.VolumeName;
                     'Total Size(GB)' = $TotalSize;
