@@ -459,8 +459,3 @@ https://gallery.technet.microsoft.com/scriptcenter/2d537e5c-b5d4-42ca-a23e-2cbce
       while ($Exit -ne $True)
 }#End     
 }#Start-Monitor
-
-
-
-
-Export-ModuleMember -Function Get-HDToolsComputerInfo, Start-Monitor, Test-CompConnection, Get-HDToolsAppInfo,Get-HDToolsHotFixInfo,Get-HDToolsComputerHDInfo
