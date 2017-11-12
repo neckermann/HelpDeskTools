@@ -222,6 +222,33 @@ Enter name of application you are looking for *Adobe*
 }
 
 
+function Get-InstalledWindowsFeatures {
+<#
+.SYNOPSIS
+Get list of installed Windows Features info on local or remote computer(s)
+.DESCRIPTION
+Get list of installed Windows Features info on local or remote computer(s) via PSRemoting from a local or remote computer(s).
+.PARAMETER ComputerName
+Input computer name or names to get info from
+#>
+    [CmdletBinding()]
+    Param(
+        [Parameter(Mandatory=$true,
+                   ValueFromPipeline=$true,
+                   ValueFromPipelineByPropertyName=$true)]
+        [string[]]$ComputerName
+    )
+    BEGIN{}
+    PROCESS{
+        foreach ($Computer in $ComputerName){
+            if (Test-CompConnection $Computer){
+              Get-WindowsFeature -ComputerName $computer|Where-Object Installed -EQ $true|Select-Object Name,DisplayName
+            }
+        }
+    }
+    END{}
+}
+
 
 function Start-Monitor {
 <#
