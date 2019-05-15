@@ -12,34 +12,5 @@ Remove-AppxPackage -AllUsers
 
 #After you can run these commands after to confirm any office apps have been removed. Review the lists and see if anything is left.
 
-Get-AppxPackage -AllUsers |Where PackageFullName -Like "*office*"
-Get-AppxProvisionedPackage -Online|Where PackageName -Like "*office*"
-
-<#
-#
-$ProvisionedPackages =
-"Microsoft.MicrosoftOfficeHub_2018.614.804.1000_neutral_~_8wekyb3d8bbwe",
-"Microsoft.Office.Desktop.Access_16050.11029.20108.0_neutral_~_8wekyb3d8bbwe",
-"Microsoft.Office.Desktop.Excel_16050.11029.20108.0_neutral_~_8wekyb3d8bbwe",
-"Microsoft.Office.Desktop.Outlook_16050.11029.20108.0_neutral_~_8wekyb3d8bbwe",
-"Microsoft.Office.Desktop.PowerPoint_16050.11029.20108.0_neutral_~_8wekyb3d8bbwe",
-"Microsoft.Office.Desktop.Publisher_16050.11029.20108.0_neutral_~_8wekyb3d8bbwe",
-"Microsoft.Office.Desktop.Word_16050.11029.20108.0_neutral_~_8wekyb3d8bbwe",
-"Microsoft.Office.Desktop_16050.11029.20108.0_neutral_~_8wekyb3d8bbwe",
-"Microsoft.Office.OneNote_16001.11029.20060.0_neutral_~_8wekyb3d8bbwe"
-
-
-foreach ($ProvisionedPackage in $ProvisionedPackages){
-    Remove-AppxProvisionedPackage -Online -PackageName $ProvisionedPackage -AllUsers
-}
-
-$Packages =
-"Microsoft.Office.Desktop_16050.11029.20108.0_x86__8wekyb3d8bbwe",
-"Microsoft.Office.OneNote_16001.11029.20060.0_x64__8wekyb3d8bbwe",
-"Microsoft.Office.Sway_18.1711.50601.0_x64__8wekyb3d8bbwe",
-"Microsoft.MicrosoftOfficeHub_17.10314.31700.1000_x64__8wekyb3d8bbwe"
-
-foreach ($Package in $Packages){
-    Remove-AppxPackage -AllUsers -Package $Package -Confirm
-} 
-#>
+#Get-AppxPackage -AllUsers |Where PackageFullName -Like "*office*"
+#Get-AppxProvisionedPackage -Online|Where PackageName -Like "*office*"
